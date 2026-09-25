@@ -368,10 +368,15 @@ module "github_deploy_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role"
   version = "6.8.1"
 
-  create                 = var.github_application_repository != ""
-  name                   = "${var.project_name}-github-deploy"
-  enable_github_oidc     = true
-  oidc_wildcard_subjects = ["${var.github_application_repository}:ref:refs/heads/main"]
+  create             = var.github_application_repository != ""
+  name               = "${var.project_name}-github-deploy"
+  enable_github_oidc = true
+  oidc_subjects = var.github_application_oidc_subject == null ? [] : [
+    var.github_application_oidc_subject
+  ]
+  oidc_wildcard_subjects = var.github_application_oidc_subject == null ? [
+    "${var.github_application_repository}:ref:refs/heads/main"
+  ] : []
   policies = {
     PixelDropDeployment = module.github_deploy_policy.arn
   }

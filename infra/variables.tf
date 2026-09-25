@@ -20,3 +20,10 @@ variable "github_application_repository" {
   description = "GitHub application repository allowed to deploy, in owner/repository form. Leave empty to disable GitHub Actions deployment access."
   default     = ""
 }
+
+variable "github_application_oidc_subject" {
+  type        = string
+  description = "Optional immutable GitHub OIDC subject without the repo: prefix, for example owner@OWNER_ID/repository@REPOSITORY_ID:ref:refs/heads/main."
+  default     = null
+  nullable    = true
+}

@@ -2,3 +2,5 @@ region        = "us-east-1"
 project_name  = "pixeldrop"
 bucket_suffix = "adeel-pixeldrop-2026-x9k4p2"
 github_application_repository = "adeel-aws/PixelDrop-Cloud-Image-Resizer"
+# Required by GitHub repositories created after July 15, 2026. Replace the IDs with your own.
+# github_application_oidc_subject = "owner@OWNER_ID/repository@REPOSITORY_ID:ref:refs/heads/main"
