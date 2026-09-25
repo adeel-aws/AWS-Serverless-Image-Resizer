@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.DS_Store
+
+# Terraform generated files and local state
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfvars
+*.tfvars.json

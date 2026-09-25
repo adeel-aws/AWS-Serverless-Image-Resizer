@@ -1,0 +1,11 @@
+flowchart LR
+    Visitor --> CloudFront
+    CloudFront --> Website[Processed S3: React files and downloads]
+    CloudFront -->|/api/*| API[API Gateway]
+    API --> Upload[Upload Lambda]
+    API --> Status[Status Lambda]
+    Upload --> Jobs[(DynamoDB jobs)]
+    Visitor -->|Pre-signed upload| Raw[Raw S3]
+    Raw --> Resizer[Resizer Lambda]
+    Resizer --> Jobs
+    Resizer --> Website

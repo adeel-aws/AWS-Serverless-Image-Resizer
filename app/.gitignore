@@ -1,0 +1,20 @@
+node_modules/
+dist/
+pixeldrop-lambda*.zip
+.DS_Store
+
+# Keep accidental Terraform files out if this directory is used independently.
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfvars
+*.tfvars.json

@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Browser
+    participant API as API Gateway + Lambda
+    participant Raw as Raw S3
+    participant Resizer as Resizer Lambda
+    participant Output as Processed S3 / CloudFront
+    Browser->>API: Create resize job
+    API-->>Browser: Job ID and pre-signed URL
+    Browser->>Raw: Upload image
+    Raw->>Resizer: Object-created event
+    Resizer->>Output: Store transformed image
+    Browser->>API: Poll status
+    API-->>Browser: Download path

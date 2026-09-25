@@ -1,0 +1,69 @@
+name: Deploy PixelDrop application
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/frontend/**"
+      - "app/backend/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  PROCESSED_BUCKET_NAME: ${{ vars.PROCESSED_BUCKET_NAME }}
+  CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out project source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            app/frontend/package-lock.json
+            app/backend/package-lock.json
+
+      - name: Get short-lived AWS credentials through OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Install and build frontend
+        working-directory: app/frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy frontend to S3
+        run: |
+          aws s3 sync app/frontend/dist "s3://${PROCESSED_BUCKET_NAME}" --delete --exclude "index.html" --cache-control "public,max-age=31536000,immutable"
+          aws s3 cp app/frontend/dist/index.html "s3://${PROCESSED_BUCKET_NAME}/index.html" --cache-control "no-cache" --content-type "text/html"
+
+      - name: Invalidate the CloudFront frontend cache
+        run: aws cloudfront create-invalidation --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" --paths "/*"
+
+      - name: Install and package Lambda backend
+        working-directory: app/backend
+        run: |
+          npm ci --omit=dev
+          zip -r ../pixeldrop-lambda.zip . -x "*.git*"
+
+      - name: Deploy Lambda code
+        run: |
+          aws lambda update-function-code --function-name "${{ vars.UPLOAD_LAMBDA_NAME }}" --zip-file fileb://app/pixeldrop-lambda.zip --publish
+          aws lambda update-function-code --function-name "${{ vars.STATUS_LAMBDA_NAME }}" --zip-file fileb://app/pixeldrop-lambda.zip --publish
+          aws lambda update-function-code --function-name "${{ vars.RESIZER_LAMBDA_NAME }}" --zip-file fileb://app/pixeldrop-lambda.zip --publish
