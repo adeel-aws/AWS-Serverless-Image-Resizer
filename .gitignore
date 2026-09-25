@@ -1,5 +1,14 @@
-node_modules/
-dist/
+# Application generated files, local configuration, and test output
+**/node_modules/
+**/dist/
+**/.vite/
+**/coverage/
+*.log
+**/.env
+**/.env.local
+**/.env.*.local
+app/pixeldrop-lambda*.zip
+app/backend/pixeldrop-lambda*.zip
 .DS_Store
 
 # Terraform generated files and local state
@@ -7,6 +16,9 @@ dist/
 *.tfstate
 *.tfstate.*
 *.tfstate.backup
+*.tfplan
+tfplan
+plan.out
 .terraform.lock.hcl
 .terraform.tfstate.lock.info
 crash.log
