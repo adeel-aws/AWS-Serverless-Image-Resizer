@@ -15,22 +15,9 @@ PixelDrop is an image-resizing website built as a practical cloud project. A vis
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    U[Visitor] --> CF[CloudFront<br/>HTTPS *.cloudfront.net]
-    CF -->|Website| WEB[Processed S3 bucket<br/>React build]
-    CF -->|/api/*| API[API Gateway]
-    API --> UL[Upload Lambda]
-    API --> SL[Status Lambda]
-    UL --> DDB[(DynamoDB<br/>resize jobs)]
-    UL -->|Pre-signed PUT URL| U
-    U -->|Original image| RAW[Raw S3 bucket]
-    RAW -->|Object-created event| RL[Resizer Lambda]
-    RL --> DDB
-    RL -->|Resized file| WEB
-    WEB -->|/downloads/*| CF
-    CF --> U
-```
+<p align="center">
+  <img src="Architecture/architecture.png" alt="PixelDrop AWS architecture" width="100%" />
+</p>
 
 ## Why this project is interesting
 
@@ -46,35 +33,56 @@ flowchart LR
 ## Application flow
 
 ```mermaid
-sequenceDiagram
-    participant B as Browser
-    participant A as API Gateway + Lambda
-    participant R as Raw S3
-    participant L as Resizer Lambda
-    participant P as Processed S3 / CloudFront
-    B->>A: Request upload job
-    A-->>B: Job ID + 5-minute pre-signed upload URL
-    B->>R: Upload original directly
-    R->>L: S3 ObjectCreated event
-    L->>P: Write resized image
-    B->>A: Poll job status
-    A-->>B: Complete + /downloads/{job-id}.{format}
-    B->>P: Download result through CloudFront
+flowchart LR
+    A[Visitor chooses image and resize options]
+    B[POST /api/uploads]
+    C[Upload Lambda creates job]
+    D[(DynamoDB job status)]
+    E[Pre-signed S3 upload URL]
+    F[Visitor uploads original to raw S3]
+    G[Raw S3 ObjectCreated event]
+    H[Resizer Lambda processes image]
+    I[Processed S3 stores download]
+    J[Visitor polls GET /api/jobs/id]
+    K[CloudFront serves resized download]
+
+    A --> B --> C
+    C --> D
+    C --> E --> F
+    F --> G --> H
+    H --> D
+    H --> I --> K
+    F --> J --> D
+    D -->|complete download path| K
 ```
+
+## Website screenshots
+
+| Dashboard | Select an image |
+| --- | --- |
+| ![PixelDrop dashboard](screenshots/dashboard.png) | ![Image selection screen](screenshots/select-image.png) |
+
+| Resize settings | Processing complete |
+| --- | --- |
+| ![Image resize settings](screenshots/resize-image.png) | ![Resized image ready to download](screenshots/resized-and-ready-to-download.png) |
+
+| Downloaded result |
+| --- |
+| ![Downloaded resized image](screenshots/downloaded.png) |
 
 ## Start here
 
 ```text
-1. Provision the AWS platform         → infra/
-2. Create and configure an App repo   → app/
-3. Push application code              → GitHub Actions deploys it automatically
+1. Provision the AWS platform           → infra/
+2. Configure repository Actions values  → app/
+3. Push application changes             → GitHub Actions deploys them automatically
 ```
 
 | Directory | Purpose |
 | --- | --- |
 | [infra/](infra/README.md) | Terraform for the AWS platform, GitHub OIDC trust, outputs, first deployment, and cleanup. |
 | [app/](app/README.md) | React frontend and Lambda backend. The deployment workflow lives at the repository root. |
-| [Architecture/](Architecture/) | Mermaid source diagrams used in this README. |
+| [Architecture/](Architecture/) | Architecture image and application-flow Mermaid source. |
 | [screenshots/](screenshots/) | Browser screenshots captured after deployment. |
 
 ## Project flow
