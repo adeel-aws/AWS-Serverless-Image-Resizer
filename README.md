@@ -26,7 +26,7 @@ PixelDrop is an image-resizing website built as a practical cloud project. A vis
 | Responsive React interface, direct uploads, resize progress, and download action | Private S3 buckets, Lambda, DynamoDB, API Gateway, CloudFront, lifecycle deletion | Terraform modules plus a GitHub Actions application-release workflow using OIDC |
 
 - Original and generated files expire after 24 hours to limit storage cost and retention.
-- Only CloudFront can read the processed/web bucket; the raw upload bucket remains private.
+- Only CloudFront can read the processed/web bucket; raw upload bucket remains private.
 - DynamoDB tracks the state transition from `waiting` to `processing`, `complete`, or `failed`.
 - GitHub Actions uses temporary OIDC credentials—no long-lived AWS access keys need to be stored in GitHub.
 
